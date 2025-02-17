@@ -342,21 +342,21 @@ function getPostData(prompt) {
         postData['cs_img_nodes'] = [];
         if (HuiseN['cs_img1']) {
             if (output[HuiseN['cs_img1'][0]].class_type == 'LoadImage') {
-                postData['cs_img_nodes'].push({node: HuiseN['cs_img1'][0], desc: HuiseN['cs_img1_desc']});
+                postData['cs_img_nodes'].push({node: HuiseN['cs_img1'][0], desc: HuiseN['cs_img1_desc'], value: ''});
             } else {
                 return getMsgByEnglish('"custom_img1" can only connect "LoadImage" node');
             }
         }
         if (HuiseN['cs_img2']) {
             if (output[HuiseN['cs_img2'][0]].class_type == 'LoadImage') {
-                postData['cs_img_nodes'].push({node: HuiseN['cs_img2'][0], desc: HuiseN['cs_img2_desc']});
+                postData['cs_img_nodes'].push({node: HuiseN['cs_img2'][0], desc: HuiseN['cs_img2_desc'], value: ''});
             } else {
                 return getMsgByEnglish('"custom_img2" can only connect "LoadImage" node');
             }
         }
         if (HuiseN['cs_img3']) {
             if (output[HuiseN['cs_img3'][0]].class_type == 'LoadImage') {
-                postData['cs_img_nodes'].push({node: HuiseN['cs_img3'][0], desc: HuiseN['cs_img3_desc']});
+                postData['cs_img_nodes'].push({node: HuiseN['cs_img3'][0], desc: HuiseN['cs_img3_desc'], value: ''});
             } else {
                 return getMsgByEnglish('"custom_img3" can only connect "LoadImage" node');
             }
@@ -365,21 +365,21 @@ function getPostData(prompt) {
         postData['cs_video_nodes'] = [];
         if (HuiseN['cs_video1']) {
             if (output[HuiseN['cs_video1'][0]].class_type == 'VHS_LoadVideo') {
-                postData['cs_video_nodes'].push({node: HuiseN['cs_video1'][0], desc: HuiseN['cs_video1_desc']});
+                postData['cs_video_nodes'].push({node: HuiseN['cs_video1'][0], desc: HuiseN['cs_video1_desc'], value: ''});
             } else {
                 return getMsgByEnglish('"custom_video1" can only connect "Load Video (Upload)" node');
             }
         }
         if (HuiseN['cs_video2']) {
             if (output[HuiseN['cs_video2'][0]].class_type == 'VHS_LoadVideo') {
-                postData['cs_video_nodes'].push({node: HuiseN['cs_video2'][0], desc: HuiseN['cs_video2_desc']});
+                postData['cs_video_nodes'].push({node: HuiseN['cs_video2'][0], desc: HuiseN['cs_video2_desc'], value: ''});
             } else {
                 return getMsgByEnglish('"custom_video2" can only connect "Load Video (Upload)" node');
             }
         }
         if (HuiseN['cs_video3']) {
             if (output[HuiseN['cs_video3'][0]].class_type == 'VHS_LoadVideo') {
-                postData['cs_video_nodes'].push({node: HuiseN['cs_video3'][0], desc: HuiseN['cs_video3_desc']});
+                postData['cs_video_nodes'].push({node: HuiseN['cs_video3'][0], desc: HuiseN['cs_video3_desc'], value: ''});
             } else {
                 return getMsgByEnglish('"custom_video3" can only connect "Load Video (Upload)" node');
             }
@@ -388,21 +388,21 @@ function getPostData(prompt) {
         postData['cs_text_nodes'] = [];
         if (HuiseN['cs_text1']) {
             if (output[HuiseN['cs_text1'][0]] && typeof output[HuiseN['cs_text1'][0]].inputs !== 'undefined' && typeof output[HuiseN['cs_text1'][0]].inputs.text !== 'undefined') {
-                postData['cs_text_nodes'].push({node: HuiseN['cs_text1'][0], desc: HuiseN['cs_text1_desc']});
+                postData['cs_text_nodes'].push({node: HuiseN['cs_text1'][0], desc: HuiseN['cs_text1_desc'], value: ''});
             } else {
                 return getMsgByEnglish('"custom_text1" can only connect "textInput" node');
             }
         }
         if (HuiseN['cs_text2']) {
             if (output[HuiseN['cs_text2'][0]] && typeof output[HuiseN['cs_text2'][0]].inputs !== 'undefined' && typeof output[HuiseN['cs_text2'][0]].inputs.text !== 'undefined') {
-                postData['cs_text_nodes'].push({node: HuiseN['cs_text2'][0], desc: HuiseN['cs_text2_desc']});
+                postData['cs_text_nodes'].push({node: HuiseN['cs_text2'][0], desc: HuiseN['cs_text2_desc'], value: ''});
             } else {
                 return getMsgByEnglish('"custom_text2" can only connect "textInput" node');
             }
         }
         if (HuiseN['cs_text3']) {
             if (output[HuiseN['cs_text3'][0]] && typeof output[HuiseN['cs_text3'][0]].inputs !== 'undefined' && typeof output[HuiseN['cs_text3'][0]].inputs.text !== 'undefined') {
-                postData['cs_text_nodes'].push({node: HuiseN['cs_text3'][0], desc: HuiseN['cs_text3_desc']});
+                postData['cs_text_nodes'].push({node: HuiseN['cs_text3'][0], desc: HuiseN['cs_text3_desc'], value: ''});
             } else {
                 return getMsgByEnglish('"custom_text3" can only connect "textInput" node');
             }

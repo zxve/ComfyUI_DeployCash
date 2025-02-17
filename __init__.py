@@ -120,6 +120,7 @@ def verify_image_exists(path):
 @server.PromptServer.instance.routes.post("/manager/tech_main")
 async def tech_zhulu(request):
     json_data = await request.json()
+    print(1, f"json_data={json_data}\n")
     if "postData" in json_data and isinstance(json_data["postData"], dict):
         json_data["postData"]["subdomain"] = subdomain
     async with aiohttp.ClientSession() as session:
@@ -131,6 +132,8 @@ async def tech_zhulu(request):
             + "&techsid="
             + techsid + "&client_id=" + get_client_id()
         )
+        print(2, f"upload_url={upload_url}\n")
+
         if json_data["r"] == "comfyui.apiv2.upload":
             output = json_data["postData"]["output"]
             workflow = json_data["postData"]["workflow"]
@@ -173,11 +176,14 @@ async def tech_zhulu(request):
                             result["data"]["data"], dict
                         ):
                             result_data = result["data"]["data"]
+                            print(3, f"techsid={techsid}, code={result_data["code"]}\n")
+
                             if (
                                 techsid != ""
                                 and techsid != "init"
                                 and result_data["code"] == 1
                             ):
+                                print(31, f"techsid={techsid}, code={result_data["code"]}\n")
                                 await update_worker_flow(result_data["name"], output)
                                 await update_worker_flow(
                                     result_data["name"], workflow, "workflow/"
@@ -195,6 +201,7 @@ async def tech_zhulu(request):
                     )
         else:
             async with session.post(upload_url, json=json_data) as resp:
+                print(4, f"upload_url={upload_url}, json_data={json_data}\n")
                 if (
                     resp.status == 200
                     and resp.headers.get("Content-Type") == "application/json"
@@ -203,6 +210,7 @@ async def tech_zhulu(request):
                         other_api_data = await resp.json()
                         result = web.json_response(other_api_data)
                         if len(other_api_data["data"]["data"]["techsid"]) > len("12345"):
+                            print(41, f"other_api_data={other_api_data}\n")
                             set_token(other_api_data["data"]["data"]["techsid"])
                         return result
                     except aiohttp.ContentTypeError:
@@ -220,6 +228,7 @@ async def tech_zhulu(request):
                             and "techsid" in result_data["data"]["data"]
                         ):
                             if len(result_data["data"]["data"]["techsid"]) > len("12345"):
+                                print(42, f"result_data={result_data}\n")
                                 set_token(result_data["data"]["data"]["techsid"])
                         return web.json_response(result)
                     except json.JSONDecodeError as e:
