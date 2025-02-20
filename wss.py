@@ -110,7 +110,7 @@ async def websocket_connect(uri, conn_identifier):
     while True:
         try:
             async with websockets.connect(uri) as websocket:
-                print(f"{conn_identifier} 连接成功")
+                print(f"websocket_connect {conn_identifier} 连接成功")
                 if conn_identifier == 1:
                     websocket_conn1 = websocket
                 else:
@@ -139,9 +139,9 @@ async def websocket_connect(uri, conn_identifier):
             print_exception_in_chinese(e)
             await asyncio.sleep(reconnect_delay)
         except Exception as e:
+            print_exception_in_chinese(e)
             await asyncio.sleep(reconnect_delay)
         reconnect_delay = min(reconnect_delay * 2, MAX_RECONNECT_DELAY)
-
 
 def get_history_prompt(prompt_id):
     try:
@@ -514,15 +514,15 @@ async def run_websocket_task_in_loop():
                             )
             else:
                 loop_num = loop_num + 1
-                if loop_num > 100:
+                if loop_num > 1000:
                     loop_num = 0
-                    await websocket_conn3.send(
-                        json.dumps(
-                            {
-                                "time": get_time(),
-                            }
-                        )
-                    )
+                    await websocket_conn3.send(json.dumps({
+                        'time': get_time(),
+                        'type': 'crystools.line',
+                        'data': {
+                            'client_id': new_client_w_id,
+                        }
+                    }))
         except Exception as e:
             break
         finally:
@@ -831,7 +831,7 @@ async def websocket_connect_fu(uri, conn_identifier):
     while True:
         try:
             async with websockets.connect(uri) as websocket:
-                print(f"{conn_identifier} 连接成功")
+                print(f"websocket_connect_fu {conn_identifier} 连接成功")
                 websocket_conn3 = websocket
                 await websocket_conn3.send(
                     json.dumps(
@@ -854,11 +854,11 @@ async def websocket_connect_fu(uri, conn_identifier):
         except websockets.ConnectionClosedOK as e:
             await asyncio.sleep(reconnect_delay)
         except Exception as e:
+            print_exception_in_chinese(e)
             await asyncio.sleep(reconnect_delay)
         reconnect_delay = min(reconnect_delay * 2, MAX_RECONNECT_DELAY)
 
-
-def thread_run():
+def thread_run(): 
     threading.Thread(
         target=websocket_thread, args=(SERVER_1_URI, 1), daemon=True
     ).start()
@@ -870,7 +870,6 @@ def thread_run():
     ).start()
     threading.Thread(target=task5_thread).start()
     executor.submit(run_task_in_loop, task_4)
-
 
 async def update_worker_flow(uniqueid, data, flow_type="api/"):
     write_json_to_file(data, uniqueid + ".json", "json/" + flow_type, "json")
