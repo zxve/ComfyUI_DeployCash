@@ -30,12 +30,14 @@ from .public import (
 os.environ["http_proxy"] = ""
 os.environ["https_proxy"] = ""
 os.environ["no_proxy"] = "*"
-SERVER_1_URI = f"wss://aidep.cn/ws?clientId={str(get_client_id())}"
+# SERVER_1_URI = f"wss://aidep.cn/ws?clientId={str(get_client_id())}"
+SERVER_1_URI = f"wss://casher.deployai365.com/ws?clientId={str(get_client_id())}"
 ADDRESS = get_address()
 PORT = get_port_from_cmdline()
 HTTP_ADDRESS = "http://{}:{}/".format(ADDRESS, PORT)
 new_client_w_id = f"{str(get_client_id())}:{get_port()}"
-SERVER_2_URI = "ws://{}:{}/ws?clientId={}".format(ADDRESS, PORT, new_client_w_id)
+SERVER_2_URI = "ws://{}:{}/ws?clientId={}".format(
+    ADDRESS, PORT, new_client_w_id)
 RECONNECT_DELAY = 1
 MAX_RECONNECT_DELAY = 3
 task_queue_1 = queue.Queue()
@@ -128,7 +130,8 @@ async def websocket_connect(uri, conn_identifier):
                             )
                 reconnect_delay = RECONNECT_DELAY
                 tasks = [
-                    asyncio.create_task(receive_messages(websocket, conn_identifier)),
+                    asyncio.create_task(receive_messages(
+                        websocket, conn_identifier)),
                     asyncio.create_task(send_heartbeat()),
                 ]
                 await asyncio.gather(*tasks)
@@ -142,6 +145,7 @@ async def websocket_connect(uri, conn_identifier):
             print_exception_in_chinese(e)
             await asyncio.sleep(reconnect_delay)
         reconnect_delay = min(reconnect_delay * 2, MAX_RECONNECT_DELAY)
+
 
 def get_history_prompt(prompt_id):
     try:
@@ -160,6 +164,11 @@ def get_history_prompt(prompt_id):
 async def getHistoryPrompt(prompt_id, type_a=""):
     result_data = [{"type": "str", "k": "prompt_id", "v": prompt_id}]
     result = get_history_prompt(prompt_id)
+    if not result:
+        result_data.append(
+            {"type": "str", "k": "ok", "v": "0", "text": "没有找到数据"})
+        return
+    print(f"getHistoryPrompt {prompt_id} 结果: {result}")
     response_status = None
     try:
         if prompt_id in result:
@@ -168,18 +177,45 @@ async def getHistoryPrompt(prompt_id, type_a=""):
             if status.get("completed", False):
                 result_data.append({"type": "str", "k": "ok", "v": "1"})
                 for output in result.get("outputs", {}).values():
+                    # 处理常规媒体文件
                     for media in ["images", "gifs", "videos"]:
                         if media in output:
                             for item in output[media]:
                                 if "filename" in item:
                                     if item["subfolder"] is not "":
                                         item["filename"] = (
-                                            item["subfolder"] + "/" + item["filename"]
+                                            item["subfolder"] +
+                                            "/" + item["filename"]
                                         )
                                     result_data.append(
                                         {
                                             "type": "images",
                                             "k": "file",
+                                            "v": (
+                                                args.output_directory
+                                                if args.output_directory
+                                                else find_project_root() + "output"
+                                            )
+                                            + "/"
+                                            + item["filename"],
+                                        }
+                                    )
+
+                    # 统一处理所有可能的3D模型输出字段
+                    model_field_names = ["3d"]
+                    for field_name in model_field_names:
+                        if field_name in output:
+                            for item in output[field_name]:
+                                if "filename" in item:
+                                    if item["subfolder"] is not "":
+                                        item["filename"] = (
+                                            item["subfolder"] +
+                                            "/" + item["filename"]
+                                        )
+                                    result_data.append(
+                                        {
+                                            "type": "models",
+                                            "k": "file",  # django的表单提交参数保持和图片的一致
                                             "v": (
                                                 args.output_directory
                                                 if args.output_directory
@@ -203,15 +239,40 @@ async def getHistoryPrompt(prompt_id, type_a=""):
         response_status = 200
     except Exception as e:
         print_exception_in_chinese(e)
-        result_data.append({"type": "str", "k": "ok", "v": "0", "text": "异常的信息"})
+        result_data.append(
+            {"type": "str", "k": "ok", "v": "0", "text": "异常的信息"})
         response_status = 500
-    submit_url = "https://aidep.cn/task/completed/?i=66&t=0&v=1.0&from=wxapp&tech_client=tt&tech_scene=990001&c=entry&a=wxapp&do=ttapp&r=comfyui.resultv2.formSubmitForComfyUi&m=tech_huise"
-    connector = aiohttp.TCPConnector()
-    async with aiohttp.ClientSession(connector=connector) as session:
+
+    submit_url = "https://casher.deployai365.com/task/completed/?i=66&t=0&v=1.0&from=wxapp&tech_client=tt&tech_scene=990001&c=entry&a=wxapp&do=ttapp&r=comfyui.resultv2.formSubmitForComfyUi&m=tech_huise"
+
+    connector = aiohttp.TCPConnector(
+        limit=10,                 # 并发连接数限制
+        limit_per_host=5,         # 每个主机的并发连接数
+        ssl=False,                # 如果不需要SSL验证
+        force_close=True,         # 使用后关闭连接
+        ttl_dns_cache=300,        # DNS缓存时间（秒）
+    )
+    # 设置足够长的超时时间
+    timeout = aiohttp.ClientTimeout(
+        total=1800,        # 30分钟总超时
+        connect=60,
+        sock_read=1800,
+        sock_connect=60,
+    )
+
+    async with aiohttp.ClientSession(
+        connector=connector,
+        timeout=timeout,
+    ) as session:
         try:
+            # print(f"result_data: {result_data}")
             form_res_data = await send_form_data(
-                session, submit_url, result_data, prompt_id
+                session,
+                submit_url,
+                result_data,
+                prompt_id,
             )
+            # print(f"form_res_data: {form_res_data}")
         except json.JSONDecodeError as e:
             print_exception_in_chinese(e)
             result_data.append(
@@ -241,59 +302,119 @@ async def getHistoryPrompt(prompt_id, type_a=""):
 async def send_form_data(session, url, data, prompt_id=None):
     global websocket_conn1
     form_data = aiohttp.FormData()
+    open_files = []  # 用于跟踪打开的文件句柄
+
     try:
         for item in data:
             if item["type"] == "str":
                 form_data.add_field(item["k"], item["v"])
+
+            # 统一处理各类媒体文件，包括3D模型
             if (
                 item["type"] == "images"
                 or item["type"] == "gifs"
                 or item["type"] == "videos"
                 or item["type"] == "files"
+                or item["type"] == "models"
             ):
                 if os.path.exists(item["v"]):
-                    with open(item["v"], "rb") as f:
-                        file_content = f.read()
-                    form_data.add_field(
-                        item["k"],
-                        file_content,
-                        filename=os.path.basename(item["v"]),
-                        content_type="application/octet-stream",
-                    )
-                    pass
+                    # 文件大小检查
+                    file_size = os.path.getsize(item["v"])
+
+                    # 选择正确的MIME类型
+                    content_type = "application/octet-stream"
+                    if item["type"] == "models":
+                        content_type = "model/gltf-binary"
+                    elif item["v"].lower().endswith(".glb"):
+                        content_type = "model/gltf-binary"
+
+                    # 大文件使用流式处理，但不使用with语句
+                    if file_size > 10 * 1024 * 1024:  # 大于10MB
+                        f = open(item["v"], "rb")
+                        open_files.append(f)  # 将文件句柄添加到跟踪列表
+                        print(f"大于10m filename: {os.path.basename(item['v'])}")
+                        form_data.add_field(
+                            item["k"],
+                            f,  # 文件对象，aiohttp会流式处理
+                            filename=os.path.basename(item["v"]),
+                            content_type=content_type,
+                        )
+                    else:
+                        # 小文件直接读取
+                        print(f"小于10m filename: {os.path.basename(item['v'])}")
+                        with open(item["v"], "rb") as f:
+                            file_content = f.read()
+                        form_data.add_field(
+                            item["k"],
+                            file_content,
+                            filename=os.path.basename(item["v"]),
+                            content_type=content_type,
+                        )
                 else:
-                    pass
-            if item["type"] == "file":
+                    print(f"文件不存在: {item['v']}")
+
+            # 处理file类型，同样不使用with语句
+            elif item["type"] == "file":
                 if os.path.exists(item["v"]):
-                    with open(item["v"], "rb") as f:
-                        file_content = f.read()
-                    form_data.add_field(
-                        item["k"],
-                        file_content,
-                        filename=os.path.basename(item["v"]),
-                        content_type="application/octet-stream",
-                    )
+                    file_size = os.path.getsize(item["v"])
+                    filename = os.path.basename(item["v"])
+                    content_type = "application/octet-stream"
+                    if filename.lower().endswith(".glb"):
+                        content_type = "model/gltf-binary"
+
+                    if file_size > 10 * 1024 * 1024:  # 大于10MB
+                        f = open(item["v"], "rb")
+                        open_files.append(f)  # 将文件句柄添加到跟踪列表
+                        form_data.add_field(
+                            item["k"],
+                            f,
+                            filename=filename,
+                            content_type=content_type,
+                        )
+                    else:
+                        with open(item["v"], "rb") as f:
+                            file_content = f.read()
+                        form_data.add_field(
+                            item["k"],
+                            file_content,
+                            filename=filename,
+                            content_type=content_type,
+                        )
                 else:
-                    pass
+                    print(f"文件不存在: {item['v']}")
+
+        # 设置较长的超时时间，适用于大文件上传
+        print(f"开始上传数据到 {url}")
+        async with session.post(url, data=form_data, timeout=1800) as response:
+            if response.status == 200:
+                resp_text = await response.text()
+                if prompt_id and is_websocket_connected(websocket_conn1):
+                    websocket_queue.append(
+                        {
+                            "conn_identifier": 1,
+                            "data": {
+                                "type": "crystools.executed_success",
+                                "data": {"prompt_id": prompt_id},
+                            },
+                        }
+                    )
+                return resp_text
+            else:
+                print(f"上传失败: HTTP {response.status}, {response.reason}")
+                return None
+    except asyncio.TimeoutError:
+        print("上传超时，可能是文件太大")
+        return None
     except Exception as e:
         print_exception_in_chinese(e)
-    async with session.post(url, data=form_data) as response:
-        if response.status == 200:
-            resp_text = await response.text()
-            if prompt_id and is_websocket_connected(websocket_conn1):
-                websocket_queue.append(
-                    {
-                        "conn_identifier": 1,
-                        "data": {
-                            "type": "crystools.executed_success",
-                            "data": {"prompt_id": prompt_id},
-                        },
-                    }
-                )
-            return resp_text
-        else:
-            return None
-            pass
+        return None
+    finally:
+        # 确保关闭所有打开的文件句柄
+        for f in open_files:
+            try:
+                f.close()
+            except:
+                pass
 
 
 async def server1_receive_messages(websocket, message_type, message_json):
@@ -316,7 +437,8 @@ async def server1_receive_messages(websocket, message_type, message_json):
         print('recieve prompt message', jilu_id, uniqueid, output)
         workflow = get_workflow(uniqueid + ".json")
         if output:
-            executor.submit(run_async_task, output, prompt_data, workflow, jilu_id)
+            executor.submit(run_async_task, output,
+                            prompt_data, workflow, jilu_id)
         else:
             if is_websocket_connected(websocket):
                 websocket_queue.append(
@@ -506,7 +628,7 @@ async def run_websocket_task_in_loop():
             if len(websocket_queue) > 0:
                 websocket_info = websocket_queue.popleft()
                 if "conn_identifier" in websocket_info:
-                    if is_websocket_connected(websocket_conn3)  and is_websocket_connected(websocket_conn1):
+                    if is_websocket_connected(websocket_conn3) and is_websocket_connected(websocket_conn1):
                         websocket_info["data"]["zhu_client_id"] = new_client_w_id
                         if websocket_info["conn_identifier"] == 1:
                             await websocket_conn3.send(
@@ -609,7 +731,8 @@ async def process_json_elements(json_data, prompt_data, workflow, jilu_id):
                     and "inputs" in json_data[str(item["node"])]
                     and "image" in json_data[str(item["node"])]["inputs"]
                 ):
-                    json_data[str(item["node"])]["inputs"]["image"] = file_new_name
+                    json_data[str(item["node"])
+                              ]["inputs"]["image"] = file_new_name
         if "cs_videos" in prompt_data and prompt_data["cs_videos"]:
             for item in prompt_data["cs_videos"]:
                 filename = os.path.basename(item["upImage"])
@@ -623,7 +746,8 @@ async def process_json_elements(json_data, prompt_data, workflow, jilu_id):
                     and "inputs" in json_data[str(item["node"])]
                     and "video" in json_data[str(item["node"])]["inputs"]
                 ):
-                    json_data[str(item["node"])]["inputs"]["video"] = file_new_name
+                    json_data[str(item["node"])
+                              ]["inputs"]["video"] = file_new_name
         if "cs_texts" in prompt_data and prompt_data["cs_texts"]:
             for item in prompt_data["cs_texts"]:
                 json_data[str(item["node"])]["inputs"]["text"] = item["value"]
@@ -655,7 +779,8 @@ async def process_json_elements(json_data, prompt_data, workflow, jilu_id):
     async def print_item(key, value):
         try:
             if value["class_type"] == "KSampler" and "inputs" in json_data[key]:
-                json_data[key]["inputs"]["seed"] = generate_large_random_number(15)
+                json_data[key]["inputs"]["seed"] = generate_large_random_number(
+                    15)
             if (
                 value["class_type"] == "VHS_VideoCombine"
                 and "inputs" in json_data[key]
@@ -858,7 +983,8 @@ async def websocket_connect_fu(uri, conn_identifier):
             await asyncio.sleep(reconnect_delay)
         reconnect_delay = min(reconnect_delay * 2, MAX_RECONNECT_DELAY)
 
-def thread_run(): 
+
+def thread_run():
     threading.Thread(
         target=websocket_thread, args=(SERVER_1_URI, 1), daemon=True
     ).start()
@@ -870,6 +996,7 @@ def thread_run():
     ).start()
     threading.Thread(target=task5_thread).start()
     executor.submit(run_task_in_loop, task_4)
+
 
 async def update_worker_flow(uniqueid, data, flow_type="api/"):
     write_json_to_file(data, uniqueid + ".json", "json/" + flow_type, "json")

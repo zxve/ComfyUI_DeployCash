@@ -265,7 +265,7 @@ function getPostData(prompt) {
         console.log(output[key].class_type)
         console.log(output[key].class_type)
         console.log(output[key].class_type)
-        if (output[key].class_type == 'SaveImage' || output[key].class_type == 'VHS_VideoCombine' || output[key].class_type == 'DeployCash_saveImage') {
+        if (output[key].class_type == 'SaveImage' || output[key].class_type == 'VHS_VideoCombine' || output[key].class_type == 'DeployCash_saveImage' || output[key].class_type == 'SaveGLB') {
             output[key].res_node = key;
             saveImageNodes.push(output[key]);
         }
