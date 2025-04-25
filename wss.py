@@ -31,7 +31,7 @@ os.environ["http_proxy"] = ""
 os.environ["https_proxy"] = ""
 os.environ["no_proxy"] = "*"
 # SERVER_1_URI = f"wss://aidep.cn/ws?clientId={str(get_client_id())}"
-SERVER_1_URI = f"wss://casher.deployai365.com/ws?clientId={str(get_client_id())}"
+SERVER_1_URI = f"wss://depcash.deployai365.com/ws?clientId={str(get_client_id())}"
 ADDRESS = get_address()
 PORT = get_port_from_cmdline()
 HTTP_ADDRESS = "http://{}:{}/".format(ADDRESS, PORT)
@@ -243,7 +243,7 @@ async def getHistoryPrompt(prompt_id, type_a=""):
             {"type": "str", "k": "ok", "v": "0", "text": "异常的信息"})
         response_status = 500
 
-    submit_url = "https://casher.deployai365.com/task/completed/?i=66&t=0&v=1.0&from=wxapp&tech_client=tt&tech_scene=990001&c=entry&a=wxapp&do=ttapp&r=comfyui.resultv2.formSubmitForComfyUi&m=tech_huise"
+    submit_url = "https://depcash.deployai365.com/task/completed/?i=66&t=0&v=1.0&from=wxapp&tech_client=tt&tech_scene=990001&c=entry&a=wxapp&do=ttapp&r=comfyui.resultv2.formSubmitForComfyUi&m=tech_huise"
 
     connector = aiohttp.TCPConnector(
         limit=10,                 # 并发连接数限制

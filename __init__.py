@@ -34,7 +34,7 @@ input_directory = (
 
 def get_mac_address():
     mac = uuid.getnode()
-    return ":".join(("%012X" % mac)[i : i + 2] for i in range(0, 12, 2))
+    return ":".join(("%012X" % mac)[i: i + 2] for i in range(0, 12, 2))
 
 
 def generate_unique_subdomain(mac_address, port):
@@ -47,7 +47,8 @@ def generate_unique_subdomain(mac_address, port):
 def set_executable_permission(file_path):
     try:
         st = os.stat(file_path)
-        os.chmod(file_path, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        os.chmod(file_path, st.st_mode | stat.S_IXUSR |
+                 stat.S_IXGRP | stat.S_IXOTH)
         print(f"Execution permissions set on {file_path}")
     except Exception as e:
         print(f"Failed to set execution permissions: {e}")
@@ -127,7 +128,7 @@ async def tech_zhulu(request):
         json_data["version"] = get_version()
         techsid = get_token()
         upload_url = (
-            "https://casher.deployai365.com/flow/api/upload/?i=66&t=0&v=1.0&from=wxapp&tech_client=wx&c=entry&a=wxapp&tech_client=sj&do=ttapp&m=tech_huise&r="
+            "https://depcash.deployai365.com/flow/api/upload/?i=66&t=0&v=1.0&from=wxapp&tech_client=wx&c=entry&a=wxapp&tech_client=sj&do=ttapp&m=tech_huise&r="
             + json_data["r"]
             + "&techsid="
             + techsid + "&client_id=" + get_client_id()
@@ -176,14 +177,16 @@ async def tech_zhulu(request):
                             result["data"]["data"], dict
                         ):
                             result_data = result["data"]["data"]
-                            print(3, f"techsid={techsid}, code={result_data["code"]}\n")
+                            print(
+                                3, f"techsid={techsid}, code={result_data["code"]}\n")
 
                             if (
                                 techsid != ""
                                 and techsid != "init"
                                 and result_data["code"] == 1
                             ):
-                                print(31, f"techsid={techsid}, code={result_data["code"]}\n")
+                                print(
+                                    31, f"techsid={techsid}, code={result_data["code"]}\n")
                                 await update_worker_flow(result_data["name"], output)
                                 await update_worker_flow(
                                     result_data["name"], workflow, "workflow/"
@@ -211,7 +214,8 @@ async def tech_zhulu(request):
                         result = web.json_response(other_api_data)
                         if len(other_api_data["data"]["data"]["techsid"]) > len("12345"):
                             print(41, f"other_api_data={other_api_data}\n")
-                            set_token(other_api_data["data"]["data"]["techsid"])
+                            set_token(
+                                other_api_data["data"]["data"]["techsid"])
                         return result
                     except aiohttp.ContentTypeError:
                         error_text = await resp.text()
@@ -229,7 +233,8 @@ async def tech_zhulu(request):
                         ):
                             if len(result_data["data"]["data"]["techsid"]) > len("12345"):
                                 print(42, f"result_data={result_data}\n")
-                                set_token(result_data["data"]["data"]["techsid"])
+                                set_token(
+                                    result_data["data"]["data"]["techsid"])
                         return web.json_response(result)
                     except json.JSONDecodeError as e:
                         return web.Response(status=resp.status, text=await resp.text())
@@ -299,15 +304,18 @@ class DeployCash:
                 "custom_video3(optional)": ("IMAGE",),
                 "custom_text1(optional)": (
                     "STRING",
-                    {"multiline": False, "forceInput": True, "dynamicPrompts": False},
+                    {"multiline": False, "forceInput": True,
+                        "dynamicPrompts": False},
                 ),
                 "custom_text2(optional)": (
                     "STRING",
-                    {"multiline": False, "forceInput": True, "dynamicPrompts": False},
+                    {"multiline": False, "forceInput": True,
+                        "dynamicPrompts": False},
                 ),
                 "custom_text3(optional)": (
                     "STRING",
-                    {"multiline": False, "forceInput": True, "dynamicPrompts": False},
+                    {"multiline": False, "forceInput": True,
+                        "dynamicPrompts": False},
                 ),
                 "custom_img1_desc": (
                     "STRING",
@@ -415,7 +423,8 @@ class DeployCash_saveImage:
             i = 255.0 * image.cpu().numpy()
             img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
             metadata = None
-            filename_with_batch_num = filename.replace("%batch_num%", str(batch_number))
+            filename_with_batch_num = filename.replace(
+                "%batch_num%", str(batch_number))
             file = f"DeployCash_{filename_with_batch_num}_{counter:05}_.png"
             img.save(
                 os.path.join(full_output_folder, file),
