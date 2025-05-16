@@ -1,31 +1,25 @@
 import asyncio
+import collections
 import hashlib
 import json
 import os
 import queue
 import random
+import threading
 import time
 import traceback
 import urllib
-import aiohttp
-import urllib.request
 import urllib.parse
-import collections
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
-from threading import Lock, Condition
+from threading import Condition, Lock
+
+import aiohttp
 import websockets
-import threading
-from .public import (
-    get_output,
-    write_json_to_file,
-    get_address,
-    get_port,
-    get_port_from_cmdline,
-    args,
-    find_project_root,
-    get_workflow,
-    get_client_id,
-)
+
+from .public import (args, find_project_root, get_address, get_client_id,
+                     get_output, get_port, get_port_from_cmdline, get_workflow,
+                     write_json_to_file)
 
 os.environ["http_proxy"] = ""
 os.environ["https_proxy"] = ""
@@ -50,8 +44,10 @@ websocket_conn3 = None
 history_data = {"queue_running": [], "queue_pending": []}
 history_prompt_ids = []
 
-WEBSOCKETS_VERSION = tuple(map(int, websockets.__version__.split('.')))
+import importlib.metadata
 
+WEBSOCKETS_VERSION = tuple(map(int, importlib.metadata.version("websockets").split('.')))
+# WEBSOCKETS_VERSION = tuple(map(int, websockets.__version__.split('.')))
 
 def is_websocket_connected(websocket_conn):
     if websocket_conn is None:
@@ -68,7 +64,8 @@ class MonitoredThreadPoolExecutor(ThreadPoolExecutor):
         self._lock = Lock()
         self._condition = Condition(self._lock)
         self._active_tasks = 0
-        self._max_workers = max_workers
+        if max_workers:
+            self._max_workers = max_workers
 
     def submit(self, fn, *args, **kwargs):
         with self._lock:
@@ -631,14 +628,16 @@ async def run_websocket_task_in_loop():
                     if is_websocket_connected(websocket_conn3) and is_websocket_connected(websocket_conn1):
                         websocket_info["data"]["zhu_client_id"] = new_client_w_id
                         if websocket_info["conn_identifier"] == 1:
-                            await websocket_conn3.send(
-                                json.dumps(websocket_info["data"])
-                            )
+                            if websocket_conn3 is not None:
+                                await websocket_conn3.send(
+                                    json.dumps(websocket_info["data"])
+                                )
             else:
                 loop_num = loop_num + 1
                 if loop_num > 1000:
                     loop_num = 0
-                    await websocket_conn3.send(json.dumps({
+                    if websocket_conn3 and is_websocket_connected(websocket_conn3):
+                        await websocket_conn3.send(json.dumps({
                         'time': get_time(),
                         'type': 'crystools.line',
                         'data': {
@@ -958,16 +957,17 @@ async def websocket_connect_fu(uri, conn_identifier):
             async with websockets.connect(uri) as websocket:
                 print(f"websocket_connect_fu {conn_identifier} 连接成功")
                 websocket_conn3 = websocket
-                await websocket_conn3.send(
-                    json.dumps(
-                        {
-                            "type": "crystools.bind",
-                            "data": {
-                                "client_id": new_client_w_id + "_fu",
-                            },
-                        }
+                if websocket_conn3 and is_websocket_connected(websocket_conn3):
+                    await websocket_conn3.send(
+                        json.dumps(
+                            {
+                                "type": "crystools.bind",
+                                "data": {
+                                    "client_id": new_client_w_id + "_fu",
+                                },
+                            }
+                        )
                     )
-                )
                 reconnect_delay = RECONNECT_DELAY
                 tasks = [
                     asyncio.create_task(run_websocket_task_in_loop()),

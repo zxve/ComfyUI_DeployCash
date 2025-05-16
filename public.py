@@ -1,11 +1,12 @@
 import hashlib
-import os
 import json
+import os
+import re
 import sys
 import uuid
 from io import StringIO
-import re
-from comfy.cli_args import parser
+
+from comfy.cli_args import parser  # type: ignore
 
 args = parser.parse_args()
 if args and args.listen:

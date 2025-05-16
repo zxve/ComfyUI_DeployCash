@@ -1,31 +1,26 @@
-import json
-import re
-import time
-import aiohttp
-import server
-from aiohttp import web
-from collections import deque
-from .install import *
-import os
-import uuid
 import hashlib
+import json
+import os
 import platform
+import re
 import stat
-import urllib.request
-import numpy as np
-from .wss import thread_run, update_worker_flow
-from .public import (
-    get_port_from_cmdline,
-    set_token,
-    get_token,
-    get_version,
-    find_project_root,
-    args,
-    get_client_id,
-)
 import threading
-import folder_paths
-from PIL import Image
+import time
+import urllib.request
+import uuid
+from collections import deque
+
+import aiohttp
+import folder_paths  # type: ignore
+import numpy as np  # type: ignore
+import server  # type: ignore
+from aiohttp import web
+from PIL import Image  # type: ignore
+
+from .install import *
+from .public import (args, find_project_root, get_client_id,
+                     get_port_from_cmdline, get_token, get_version, set_token)
+from .wss import thread_run, update_worker_flow
 
 input_directory = (
     args.input_directory if args.input_directory else find_project_root() + "input"
@@ -167,7 +162,7 @@ async def tech_zhulu(request):
                             content_type="application/octet-stream",
                         )
             except Exception as e:
-                return web.Response(status=200, text=e)
+                return web.Response(status=200, text=str(e))
             async with session.post(upload_url, data=form_data) as response:
                 try:
                     response_result = await response.text()
@@ -252,7 +247,7 @@ class DeployCash:
         pass
 
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(cls):
         return {
             "required": {
                 "app_title": (
@@ -371,7 +366,7 @@ class DeployCash_textInput:
         pass
 
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(cls):
         return {
             "required": {
                 "text": (
@@ -398,7 +393,7 @@ class DeployCash_saveImage:
         self.compress_level = 4
 
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(cls):
         return {
             "required": {
                 "images": ("IMAGE",),
