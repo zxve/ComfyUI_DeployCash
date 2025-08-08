@@ -182,7 +182,7 @@ function getMsgByEnglish(en_str){
     const msgDict = {
         'Please wait...': '请稍后...',
         'There can only be one "DeployCash" node in a workflow': '工作流中只能有一个"DeployCash"节点',
-        'Please make sure that there is only one "SaveImgae", "DeployCash_saveImage" or "VHS_VideoCombine" node in the workflow.': '请确保工作流中只有一个"SaveImgae"、"DeployCash_saveImage"或"VHS_VideoCombine"节点。',
+        'Please make sure that there is only one "SaveImgae", "DeployCash_saveImage" or "VHS_VideoCombine" node in the workflow.': '请确保工作流中只有一个"SaveImgae"、"DeployCash_saveImage"、"VHS_VideoCombine"或"SaveVideo"节点。',
         'Instructions for use of works': '作品使用说明',
         '"app_img1" can only connect "LoadImage" node': '"app_img1" 只能连接 "LoadImage" 节点',
         '"app_img2" can only connect "LoadImage" node': '"app_img2" 只能连接 "LoadImage" 节点',
@@ -265,7 +265,7 @@ function getPostData(prompt) {
         console.log(output[key].class_type)
         console.log(output[key].class_type)
         console.log(output[key].class_type)
-        if (output[key].class_type == 'SaveImage' || output[key].class_type == 'VHS_VideoCombine' || output[key].class_type == 'DeployCash_saveImage' || output[key].class_type == 'SaveGLB' || output[key].class_type == 'SaveAnimatedWEBP') {
+        if (output[key].class_type == 'SaveImage' || output[key].class_type == 'VHS_VideoCombine' || output[key].class_type == 'DeployCash_saveImage' || output[key].class_type == 'SaveGLB' || output[key].class_type == 'SaveAnimatedWEBP' || output[key].class_type == 'SaveVideo') {
             output[key].res_node = key;
             saveImageNodes.push(output[key]);
         }
