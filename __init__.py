@@ -294,6 +294,7 @@ class DeployCash:
                 "custom_img1(optional)": ("IMAGE",),
                 "custom_img2(optional)": ("IMAGE",),
                 "custom_img3(optional)": ("IMAGE",),
+                "custom_img4(optional)": ("IMAGE",),
                 "custom_video1(optional)": ("IMAGE",),
                 "custom_video2(optional)": ("IMAGE",),
                 "custom_video3(optional)": ("IMAGE",),
@@ -321,6 +322,10 @@ class DeployCash:
                     {"multiline": False, "default": "请上传图片"},
                 ),
                 "custom_img3_desc": (
+                    "STRING",
+                    {"multiline": False, "default": "请上传图片"},
+                ),
+                "custom_img4_desc": (
                     "STRING",
                     {"multiline": False, "default": "请上传图片"},
                 ),

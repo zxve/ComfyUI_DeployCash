@@ -190,6 +190,7 @@ function getMsgByEnglish(en_str){
         '"custom_img1" can only connect "LoadImage" node': '"custom_img1"只能连接"LoadImage"节点',
         '"custom_img2" can only connect "LoadImage" node': '"custom_img2"只能连接"LoadImage"节点',
         '"custom_img3" can only connect "LoadImage" node': '"custom_img3"只能连接"LoadImage"节点',
+        '"custom_img4" can only connect "LoadImage" node': '"custom_img4"只能连接"LoadImage"节点',
         '"custom_video1" can only connect "Load Video (Upload)" node': '"custom_video1" 只能连接"加载视频（上传）"节点',
         '"custom_video2" can only connect "Load Video (Upload)" node': '"custom_video2" 只能连接"加载视频（上传）"节点',
         '"custom_video3" can only connect "Load Video (Upload)" node': '"custom_video3" 只能连接"加载视频（上传）"节点',
@@ -288,6 +289,7 @@ function getPostData(prompt) {
         HuiseN['cs_img1'] = HuiseO['custom_img1(optional)'];
         HuiseN['cs_img2'] = HuiseO['custom_img2(optional)'];
         HuiseN['cs_img3'] = HuiseO['custom_img3(optional)'];
+        HuiseN['cs_img4'] = HuiseO['custom_img4(optional)'];
         HuiseN['cs_video1'] = HuiseO['custom_video1(optional)'];
         HuiseN['cs_video2'] = HuiseO['custom_video2(optional)'];
         HuiseN['cs_video3'] = HuiseO['custom_video3(optional)'];
@@ -303,6 +305,7 @@ function getPostData(prompt) {
         HuiseN['cs_img1_desc'] = HuiseO['custom_img1_desc'];
         HuiseN['cs_img2_desc'] = HuiseO['custom_img2_desc'];
         HuiseN['cs_img3_desc'] = HuiseO['custom_img3_desc'];
+        HuiseN['cs_img4_desc'] = HuiseO['custom_img4_desc'];
         HuiseN['cs_video1_desc'] = HuiseO['custom_video1_desc'];
         HuiseN['cs_video2_desc'] = HuiseO['custom_video2_desc'];
         HuiseN['cs_video3_desc'] = HuiseO['custom_video3_desc'];
@@ -359,6 +362,13 @@ function getPostData(prompt) {
                 postData['cs_img_nodes'].push({node: HuiseN['cs_img3'][0], desc: HuiseN['cs_img3_desc'], value: ''});
             } else {
                 return getMsgByEnglish('"custom_img3" can only connect "LoadImage" node');
+            }
+        }
+        if (HuiseN['cs_img4']) {
+            if (output[HuiseN['cs_img4'][0]].class_type == 'LoadImage') {
+                postData['cs_img_nodes'].push({node: HuiseN['cs_img4'][0], desc: HuiseN['cs_img4_desc'], value: ''});
+            } else {
+                return getMsgByEnglish('"custom_img4" can only connect "LoadImage" node');
             }
         }
 
